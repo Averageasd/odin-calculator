@@ -21,6 +21,7 @@ body{
     justify-content: flex-end;
     padding-right: 8px;
     font-size: 36px;
+    margin-top: 8px;
 }
 
 .button-container{
@@ -34,7 +35,7 @@ body{
     gap:8px;
 }
 
-.button-row button{
+button{
     width: 60px;
     height: 60px;
     border-radius: 50%;
@@ -47,4 +48,10 @@ body{
 #btn-0{
     width: 128px;
     border-radius: 25px;
+}
+
+.highlight-btn{
+    background-color:white;
+    border: none;
+    color:#9c58f5;
 }
