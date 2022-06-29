@@ -7,11 +7,21 @@ const validNumPattern = '0123456789';
 const validOpPattern = '+-x/';
 const equalSymbol = '=';
 const changeSignStr = '+/-';
+const percentSymbol = '%';
+const dotSymbol = '.';
 
-let firstOperand = '';
-let secondOperand = '';
-let operator = '';
+const exp = [];
+
 let operatorBtnText = '';
+
+function NumObj(digit){
+    this.sign = '';
+    this.digit = digit;
+}
+
+function OperatorObj(op){
+    this.op = op;
+}
 
 function registerClickListenerToBtns(){
     for (let i = 0; i<btnContainerDiv.children.length;i++){
@@ -29,11 +39,10 @@ function registerClickListenerToBtns(){
                     operatorBtnText = btn.innerText;
                 }
                 buildMathExp(btn);
-                numberDisplyDiv.innerText=getTextToDisplay();
-                
+                numberDisplyDiv.innerText = getDisplayText();
+
             });
         }
-        
     }
 }
 
@@ -47,71 +56,75 @@ function useOriginColorForBtn(){
 }
 
 function buildMathExp(btn){
-    if (changeSignStr===btn.innerText){
-        if (secondOperand!==''){
-            secondOperand = (Number(secondOperand)*-1).toString();
+    if (validNumPattern.includes(btn.innerText)){
+        const numObj = new NumObj(btn.innerText);
+        if (exp.length === 0){
+            exp.push(numObj);
+            console.log(exp);
             return;
         }
-        firstOperand = (Number(firstOperand)*-1).toString();
-    }
-    else if (validNumPattern.includes(btn.innerText)){
-        if (operator===''){
-            firstOperand+=btn.innerText;
+        const lastObj = exp[exp.length-1];
+        if (lastObj instanceof NumObj){
+            lastObj.digit+=btn.innerText;
+            exp[exp.length-1] = lastObj;
         }
-        else if(operator!==''){
-            secondOperand+=btn.innerText;
+        else{
+            exp.push(numObj);
         }
     }
-    else if (validOpPattern.includes(btn.innerText) || equalSymbol.includes(btn.innerText)){
-        if (checkMathExpCalculatable()){
-            console.log('calculated and reset');
-            firstOperand = getMathExpRes();
-            secondOperand = '';
-            if (equalSymbol.includes(btn.innerText)){
-                operator = '';
+
+    else if (validOpPattern.includes(btn.innerText)){
+        if (exp.length>=1){
+            const operatorObj = new OperatorObj(btn.innerText);
+            if (exp.length === 1){
+                exp.push(operatorObj);
+                console.log(exp);
+                return;
             }
-        }
-        if (firstOperand!=='' && validOpPattern.includes(btn.innerText)){
-            operator = btn.innerText;
+            if (exp.length === 2){
+                exp[1] = operatorObj;
+                console.log(exp);
+                return;
+            }
+            operate();
+            exp.push(operatorObj);
         }
     }
-}
-    
 
-function checkMathExpCalculatable(){
-   if (firstOperand!=='' && secondOperand!=='' && operator!==''){
-        return true;
-   } 
-   return false;
+    console.log(exp);
 }
 
-function getMathExpRes(){
+function operate(){
+    let n1 = Number(exp[0].digit);
+    let n2 = Number(exp[2].digit);
     let res = 0;
+    let operator = exp[1].op;
     switch(operator){
         case '+':
-            res = Number(firstOperand) + Number(secondOperand);
+            res = (n1+n2);
             break;
         case '-':
-            res = Number(firstOperand) - Number(secondOperand);
-            break;
-        case 'x':
-            res = Number(firstOperand) * Number(secondOperand);
+            res = (n1-n2);
             break;
         case '/':
-            res = Number(firstOperand) / Number(secondOperand);
+            res = (n1/n2);
+            break;
+        case 'x':
+            res = (n1*n2);
             break;
     }
-    return res;
+    if (res > 1000000000){
+        res = res.toExponential();
+    }
+    res = res.toFixed(2);
+    exp[0].digit = res;
+    exp.pop();
+    exp.pop();
 }
 
-function getTextToDisplay(){
-    if (secondOperand!==''){
-        return secondOperand;
-    }
-    if (firstOperand!==''){
-        return firstOperand;
-    }
-    return '';
+function getDisplayText(){
+    return '0';
 }
+
 
 registerClickListenerToBtns();
