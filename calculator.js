@@ -9,13 +9,13 @@ const equalSymbol = '=';
 const changeSignStr = '+/-';
 const percentSymbol = '%';
 const dotSymbol = '.';
+const clearBtn = 'AC';
 
 const exp = [];
 
 let operatorBtnText = '';
 
 function NumObj(digit){
-    this.sign = '';
     this.digit = digit;
 }
 
@@ -56,7 +56,24 @@ function useOriginColorForBtn(){
 }
 
 function buildMathExp(btn){
-    if (validNumPattern.includes(btn.innerText)){
+    if (clearBtn == btn.innerText){
+        exp.length = 0;
+    }
+    else if (dotSymbol === btn.innerText){
+        addDotToCurNum();
+    }   
+    else if (percentSymbol === btn.innerText){
+        divideCurNumByOneHundred();
+    }
+    else if (changeSignStr === btn.innerText){
+        changeSignOfCurNum();
+    }
+    else if (equalSymbol === btn.innerText){
+        if (exp.length === 3){
+            operate();
+        }
+    }
+    else if (validNumPattern.includes(btn.innerText)){
         const numObj = new NumObj(btn.innerText);
         if (exp.length === 0){
             exp.push(numObj);
@@ -65,7 +82,10 @@ function buildMathExp(btn){
         }
         const lastObj = exp[exp.length-1];
         if (lastObj instanceof NumObj){
-            lastObj.digit+=btn.innerText;
+            if (lastObj.digit.length<12){
+                lastObj.digit+=btn.innerText;
+            }
+            
             exp[exp.length-1] = lastObj;
         }
         else{
@@ -94,6 +114,43 @@ function buildMathExp(btn){
     console.log(exp);
 }
 
+function addDotToCurNum(){
+    if (exp.length === 3){
+        if (!exp[2].digit.includes(dotSymbol)){
+            exp[2].digit+=dotSymbol;
+        }
+    }
+
+    else if (exp.length<=2){
+        if (exp.length === 0){
+            exp.push(new NumObj('0'));
+            exp[0].digit+=dotSymbol;
+            return;
+        }
+        if (!exp[0].digit.includes(dotSymbol)){
+            exp[0].digit+=dotSymbol;
+        }
+    }
+}
+
+function divideCurNumByOneHundred(){
+    if (exp.length <= 2){
+        exp[0].digit = getRoundedNum((Number(exp[0].digit)/100)).toString();
+    }
+    else if (exp.length === 3){
+        exp[2].digit = getRoundedNum((Number(exp[2].digit)/100)).toString();
+    }
+}
+
+function changeSignOfCurNum(){
+    if (exp.length <= 2){
+        exp[0].digit = getRoundedNum((Number(exp[0].digit)*-1)).toString();
+    }
+    else if (exp.length === 3){
+        exp[2].digit = getRoundedNum((Number(exp[2].digit)*-1)).toString();
+    }
+}
+
 function operate(){
     let n1 = Number(exp[0].digit);
     let n2 = Number(exp[2].digit);
@@ -113,17 +170,37 @@ function operate(){
             res = (n1*n2);
             break;
     }
-    if (res > 1000000000){
-        res = res.toExponential();
-    }
-    res = res.toFixed(2);
-    exp[0].digit = res;
+    
+    exp[0].digit = getRoundedNum(res);
     exp.pop();
     exp.pop();
 }
 
+function getRoundedNum(num){
+    let roundedNum = num;
+    if (roundedNum >= 1000000000){
+        roundedNum = roundedNum.toExponential();
+    }
+    else{
+        if (roundedNum - parseInt(roundedNum) === 0){
+            roundedNum = roundedNum.toString();
+        }
+        else{
+            roundedNum = roundedNum.toFixed(2);
+        }
+    }
+
+    return roundedNum;
+}
+
 function getDisplayText(){
-    return '0';
+    if (exp.length === 0){
+        return '0';
+    }
+    if (exp.length <= 2){
+        return exp[0].digit;
+    }
+    return exp[2].digit;
 }
 
 
